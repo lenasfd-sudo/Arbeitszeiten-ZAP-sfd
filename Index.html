@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Arbeitszeiten - RD, HN, JP</title>
+    
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Arbeitszeiten">
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Team%20Arbeitszeiten%22%2C%22short_name%22%3A%22Arbeitszeiten%22%2C%22description%22%3A%22Arbeitszeiten%20Erfassung%20f%C3%BCr%20RD%2C%20HN%2C%20JP%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23667eea%22%2C%22theme_color%22%3A%22%23764ba2%22%2C%22orientation%22%3A%22portrait%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiPgo8cGF0aCBkPSJNMTIgNnYxMk0xOCAxMkg2Ii8%2BCjwvc3ZnPgo8L3N2Zz4K%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; color: #333; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 20px; color: white; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card h2 { font-size: 18px; margin-bottom: 15px; color: #4a5568; display: flex; align-items: center; gap: 8px; }
+        .person-selector { display: flex; gap: 5px; margin-bottom: 15px; background: #f7fafc; padding: 5px; border-radius: 10px; }
+        .person-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+        .person-btn.active { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: #667eea; }
+        .input-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; color: #4a5568; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        input:focus, select:focus { outline: none; border-color: #667eea; }
+        .time-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; transition: transform 0.2s; }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        .btn-secondary { background: #e2e8f0; color: #4a5568; margin-top: 8px; }
+        .tabs { display: flex; margin-bottom: 15px; background: #e2e8f0; border-radius: 8px; padding: 4px; }
+        .tab { flex: 1; text-align: center; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: background 0.3s; }
+        .tab.active { background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .person-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .person-stat { background: #f7fafc; padding: 15px; border-radius: 10px; text-align: center; }
+        .person-stat.rd { border-top: 4px solid #667eea; }
+        .person-stat.hn { border-top: 4px solid #e53e3e; }
+        .person-stat.jp { border-top: 4px solid #38a169; }
+        .person-name { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        .person-hours { font-size: 18px; font-weight: bold; color: #4a5568; }
+        .entry { background: #f7fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid; }
+        .entry.rd { border-left-color: #667eea; }
+        .entry.hn { border-left-color: #e53e3e; }
+        .entry.jp { border-left-color: #38a169; }
+        .entry-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .entry-person { font-weight: bold; padding: 2px 8px; border-radius: 12px; font-size: 12px; color: white; }
+        .rd-badge { background: #667eea; }
+        .hn-badge { background: #e53e3e; }
+        .jp-badge { background: #38a169; }
+        .entry-time { color: #718096; }
+        .entry-details { display: flex; justify-content: space-between; font-size: 14px; margin-top: 5px; }
+        .install-prompt { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; max-width: 400px; width: 90%; text-align: center; display: none; }
+        .install-btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 5px; cursor: pointer; }
+        .install-cancel { background: #e2e8f0; color: #4a5568; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Team Arbeitszeiten</h1>
+            <p>RD • HN • JP</p>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('eingabe')">Eingabe</div>
+            <div class="tab" onclick="switchTab('uebersicht')">Übersicht</div>
+            <div class="tab" onclick="switchTab('export')">Export</div>
+        </div>
+        
+        <div id="eingabe" class="tab-content active">
+            <div class="card">
+                <h2>👤 Person auswählen</h2>
+                <div class="person-selector">
+                    <button class="person-btn active" onclick="selectPerson('rd')">RD</button>
+                    <button class="person-btn" onclick="selectPerson('hn')">HN</button>
+                    <button class="person-btn" onclick="selectPerson('jp')">JP</button>
+                </div>
+                
+                <h2>📝 Zeiterfassung</h2>
+                <div class="input-group">
+                    <label for="datum">Datum</label>
+                    <input type="date" id="datum">
+                </div>
+                
+                <div class="input-group">
+                    <label>Arbeitszeiten</label>
+                    <div class="time-inputs">
+                        <div><label for="startzeit">Start</label><input type="time" id="startzeit" value="08:00"></div>
+                        <div><label for="endzeit">Ende</label><input type="time" id="endzeit" value="17:00"></div>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="pausenzeit">Pausenzeit</label>
+                    <select id="pausenzeit">
+                        <option value="0">Keine Pause</option>
+                        <option value="15">15 Minuten</option>
+                        <option value="30" selected>30 Minuten</option>
+                        <option value="45">45 Minuten</option>
+                        <option value="60">1 Stunde</option>
+                    </select>
+                </div>
+                
+                <button class="btn" onclick="speichereZeit()">Zeit für <span id="currentPersonName">RD</span> speichern</button>
+            </div>
+            
+            <div class="card">
+                <h2>📊 Heutige Übersicht</h2>
+                <div class="person-stats">
+                    <div class="person-stat rd"><div class="person-name">RD</div><div class="person-hours" id="heuteRD">0:00</div><div class="stat-label">Stunden</div></div>
+                    <div class="person-stat hn"><div class="person-name">HN</div><div class="person-hours" id="heuteHN">0:00</div><div class="stat-label">Stunden</div></div>
+                    <div class="person-stat jp"><div class="person-name">JP</div><div class="person-hours" id="heuteJP">0:00</div><div class="stat-label">Stunden</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="uebersicht" class="tab-content">
+            <div class="card">
+                <h2>📈 Team-Übersicht</h2>
+                <div class="person-stats">
+                    <div class="person-stat rd"><div class="person-name">RD</div><div class="person-hours" id="monatRD">0:00</div><div class="stat-label">Dieser Monat</div></div>
+                    <div class="person-stat hn"><div class="person-name">HN</div><div class="person-hours" id="monatHN">0:00</div><div class="stat-label">Dieser Monat</div></div>
+                    <div class="person-stat jp"><div class="person-name">JP</div><div class="person-hours" id="monatJP">0:00</div><div class="stat-label">Dieser Monat</div></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>📋 Letzte Team-Einträge</h2>
+                <div id="eintraegeListe"></div>
+            </div>
+        </div>
+        
+        <div id="export" class="tab-content">
+            <div class="card">
+                <h2>📤 Daten exportieren</h2>
+                <p>Lade die Arbeitszeiten des gesamten Teams als CSV-Datei herunter.</p>
+                <button class="btn" onclick="exportMonat()">Aktuellen Monat exportieren</button>
+                <button class="btn btn-secondary" onclick="exportAlle()">Alle Daten exportieren</button>
+                <button class="btn btn-secondary" onclick="loescheDaten()">Alle Daten löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="installPrompt" class="install-prompt">
+        <p>App installieren für bessere Erfahrung?</p>
+        <button class="install-btn" onclick="installApp()">Installieren</button>
+        <button class="install-btn install-cancel" onclick="hideInstallPrompt()">Später</button>
+    </div>
+
+    <script>
+        let zeiten = JSON.parse(localStorage.getItem('teamArbeitszeiten')) || [];
+        let aktuellePerson = 'rd';
+        let deferredPrompt;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('datum').valueAsDate = new Date();
+            updateUebersicht();
+            setupInstallPrompt();
+        });
+        
+        function setupInstallPrompt() {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                setTimeout(() => {
+                    document.getElementById('installPrompt').style.display = 'block';
+                }, 3000);
+            });
+        }
+        
+        function hideInstallPrompt() {
+            document.getElementById('installPrompt').style.display = 'none';
+        }
+        
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredPrompt = null;
+                    hideInstallPrompt();
+                });
+            }
+        }
+        
+        function selectPerson(person) {
+            aktuellePerson = person;
+            document.querySelectorAll('.person-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('currentPersonName').textContent = getPersonName(person);
+        }
+        
+        function getPersonName(kurz) {
+            return {'rd': 'RD', 'hn': 'HN', 'jp': 'JP'}[kurz];
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            if (tabName === 'uebersicht' || tabName === 'export') updateUebersicht();
+        }
+        
+        function speichereZeit() {
+            const datum = document.getElementById('datum').value;
+            const start = document.getElementById('startzeit').value;
+            const ende = document.getElementById('endzeit').value;
+            const pause = document.getElementById('pausenzeit').value;
+
+            if (!datum || !start || !ende) {
+                alert('Bitte fülle alle Felder aus!');
+                return;
+            }
+
+            const startMinuten = toMinuten(start);
+            const endeMinuten = toMinuten(ende);
+            const pauseMinuten = parseInt(pause);
+            
+            if (endeMinuten <= startMinuten) {
+                alert('Endzeit muss nach der Startzeit liegen!');
+                return;
+            }
+            
+            const gesamtMinuten = (endeMinuten - startMinuten) - pauseMinuten;
+            
+            if (gesamtMinuten < 0) {
+                alert('Die Pausenzeit ist länger als die Arbeitszeit!');
+                return;
+            }
+            
+            const eintrag = {
+                id: Date.now(),
+                person: aktuellePerson,
+                datum: datum,
+                start: start,
+                ende: ende,
+                pause: pause,
+                gesamt: minutenZuZeit(gesamtMinuten),
+                gesamtMinuten: gesamtMinuten
+            };
+
+            zeiten.push(eintrag);
+            localStorage.setItem('teamArbeitszeiten', JSON.stringify(zeiten));
+            document.getElementById('startzeit').value = '08:00';
+            document.getElementById('endzeit').value = '17:00';
+            updateUebersicht();
+            alert(`Zeit für ${getPersonName(aktuellePerson)} gespeichert!`);
+        }
+
+        function toMinuten(zeit) {
+            const [stunden, minuten] = zeit.split(':').map(Number);
+            return stunden * 60 + minuten;
+        }
+
+        function minutenZuZeit(minuten) {
+            const stunden = Math.floor(minuten / 60);
+            const mins = minuten % 60;
+            return `${stunden}:${mins.toString().padStart(2, '0')}`;
+        }
+
+        function updateUebersicht() {
+            const heute = new Date().toISOString().split('T')[0];
+            const heuteRD = zeiten.filter(z => z.datum === heute && z.person === 'rd').reduce((sum, z) => sum + z.gesamtMinuten, 0);
+            const heuteHN = zeiten.filter(z => z.datum === heute && z.person === 'hn').reduce((sum, z) => sum + z.gesamtMinuten, 0);
+            const heuteJP = zeiten.filter(z => z.datum === heute && z.person === 'jp').reduce((sum, z) => sum + z.gesamtMinuten, 0);
+            
+            document.getElementById('heuteRD').textContent = minutenZuZeit(heuteRD);
+            document.getElementById('heuteHN').textContent = minutenZuZeit(heuteHN);
+            document.getElementById('heuteJP').textContent = minutenZuZeit(heuteJP);
+            
+            const jetzt = new Date();
+            const monat = jetzt.getMonth() + 1;
+            const jahr = jetzt.getFullYear();
+            
+            const monatRD = zeiten.filter(z => {
+                const eintragDatum = new Date(z.datum);
+                return eintragDatum.getMonth() + 1 === monat && eintragDatum.getFullYear() === jahr && z.person === 'rd';
+            }).reduce((sum, z) => sum + z.gesamtMinuten, 0);
+            
+            const monatHN = zeiten.filter(z => {
+                const eintragDatum = new Date(z.datum);
+                return eintragDatum.getMonth() + 1 === monat && eintragDatum.getFullYear() === jahr && z.person === 'hn';
+            }).reduce((sum, z) => sum + z.gesamtMinuten, 0);
+            
+            const monatJP = zeiten.filter(z => {
+                const eintragDatum = new Date(z.datum);
+                return eintragDatum.getMonth() + 1 === monat && eintragDatum.getFullYear() === jahr && z.person === 'jp';
+            }).reduce((sum, z) => sum + z.gesamtMinuten, 0);
+            
+            document.getElementById('monatRD').textContent = minutenZuZeit(monatRD);
+            document.getElementById('monatHN').textContent = minutenZuZeit(monatHN);
+            document.getElementById('monatJP').textContent = minutenZuZeit(monatJP);
+            
+            const liste = document.getElementById('eintraegeListe');
+            liste.innerHTML = '';
+            const letzteEintraege = zeiten.slice(-10).reverse();
+            
+            if (letzteEintraege.length === 0) {
+                liste.innerHTML = '<p>Noch keine Einträge vorhanden.</p>';
+            } else {
+                letzteEintraege.forEach(eintrag => {
+                    const personClass = eintrag.person;
+                    const personBadge = `${eintrag.person}-badge`;
+                    const personName = getPersonName(eintrag.person);
+                    
+                    const entryElement = document.createElement('div');
+                    entryElement.className = `entry ${personClass}`;
+                    entryElement.innerHTML = `
+                        <div class="entry-header">
+                            <div>
+                                <span class="entry-person ${personBadge}">${personName}</span>
+                                <span class="entry-date">${formatDatum(eintrag.datum)}</span>
+                            </div>
+                            <span class="entry-time">${eintrag.gesamt}h</span>
+                        </div>
+                        <div class="entry-details">
+                            <span>${eintrag.start} - ${eintrag.ende}</span>
+                            <span>Pause: ${eintrag.pause} min</span>
+                        </div>
+                    `;
+                    liste.appendChild(entryElement);
+                });
+            }
+        }
+        
+        function formatDatum(datumString) {
+            const datum = new Date(datumString);
+            return datum.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function exportMonat() {
+            const jetzt = new Date();
+            const monat = jetzt.getMonth() + 1;
+            const jahr = jetzt.getFullYear();
+            
+            const monatsZeiten = zeiten.filter(z => {
+                const eintragDatum = new Date(z.datum);
+                return eintragDatum.getMonth() + 1 === monat && eintragDatum.getFullYear() === jahr;
+            });
+
+            if (monatsZeiten.length === 0) {
+                alert('Keine Daten für diesen Monat vorhanden!');
+                return;
+            }
+            
+            let csv = 'Person;Datum;Start;Ende;Pause (min);Gesamt (h)\n';
+            monatsZeiten.forEach(z => {
+                csv += `${getPersonName(z.person)};${z.datum};${z.start};${z.ende};${z.pause};${z.gesamt}\n`;
+            });
+
+            downloadCSV(csv, `team_arbeitszeiten_${monat}_${jahr}.csv`);
+            alert(`Team-Bericht ${monat}/${jahr} exportiert!`);
+        }
+        
+        function exportAlle() {
+            if (zeiten.length === 0) {
+                alert('Keine Daten vorhanden!');
+                return;
+            }
+            
+            let csv = 'Person;Datum;Start;Ende;Pause (min);Gesamt (h)\n';
+            zeiten.forEach(z => {
+                csv += `${getPersonName(z.person)};${z.datum};${z.start};${z.ende};${z.pause};${z.gesamt}\n`;
+            });
+
+            const jetzt = new Date();
+            downloadCSV(csv, `team_arbeitszeiten_komplett_${jetzt.toISOString().split('T')[0]}.csv`);
+            alert('Alle Team-Daten exportiert!');
+        }
+        
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function loescheDaten() {
+            if (confirm('Möchtest du wirklich ALLE Team-Daten löschen? Dies kann nicht rückgängig gemacht werden!')) {
+                zeiten = [];
+                localStorage.setItem('teamArbeitszeiten', JSON.stringify(zeiten));
+                updateUebersicht();
+                alert('Alle Team-Daten wurden gelöscht!');
+            }
+        }
+    </script>
+</body>
+</html>
